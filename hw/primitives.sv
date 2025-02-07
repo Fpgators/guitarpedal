@@ -2,7 +2,7 @@
 
 module register
 #(
-    parameter WIDTH
+    parameter int WIDTH = 24
 )
 (
     input logic clk,
@@ -24,9 +24,39 @@ end
 
 endmodule
 
+module delay 
+#(
+    parameter int WIDTH = 24,
+    parameter int CYCLES = 2
+)
+(
+    input logic clk,
+    input logic reset,
+    input logic enable,
+    input logic [WIDTH-1:0] in,
+    output logic [WIDTH-1:0] out
+);
+logic [WIDTH-1:0] regs [CYCLES+1];
+
+for(genvar i = 0; i < CYCLES; i++) begin : reg_array
+    register #(.WIDTH(WIDTH))
+    reg_array (
+        .clk(clk),
+        .reset(reset),
+        .enable(enable),
+        .in(regs[i]),
+        .out(regs[i+1])
+    );
+end 
+assign regs[0] = in;
+assign out = regs[CYCLES];
+endmodule
+
+
+
 module multiplexer
 #(
-    parameter WIDTH
+    parameter int WIDTH = 24
     
 )
 (
@@ -43,21 +73,21 @@ endmodule
 
 module multiplier
 #(
-    parameter WIDTH
+    parameter int WIDTH = 24
 )
 (
     input logic[WIDTH-1:0] a,
     input logic[WIDTH-1:0] b,
-    input logic[2*WIDTH-1:0] product
+    output logic[2*WIDTH-1:0] product
 );
 
-assign product = signed'a * signed'b; 
+assign product = a * b; 
 
 endmodule
 
 module adder
 #(
-    parameter WIDTH
+    parameter int WIDTH = 24
 )
 (
     input logic [WIDTH-1:0] in0, in1,
@@ -72,7 +102,7 @@ endmodule
 
 module comparator
 #(
-    parameter WIDTH
+    parameter int WIDTH = 24
 )
 (
     input logic [WIDTH-1:0] in0, in1,
@@ -85,7 +115,7 @@ endmodule
 
 module rectifier
 #(
-    parameter WIDTH
+    parameter int WIDTH = 24
 )
 (
     input logic [WIDTH-1:0] input,
