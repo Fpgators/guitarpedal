@@ -15,26 +15,38 @@ module distortion
     output logic [WIDTH-1:0] out
 
 );
-logic comparator_out;
-logic[2*WIDTH-1:0] data_register_out_fixed_point;
-logic[2*WIDTH-1:0] gain_register_out_fixed_point;
+//Input register signals
 logic[WIDTH-1:0] data_register_out;
 logic[WIDTH-1:0] gain_register_out;
 logic[WIDTH-1:0] threshold_register_out; 
-logic[WIDTH-1:0] comparator_in;
+
+//Conversion to wider width to enable fixed point multiplication
+logic[2*WIDTH-1:0] data_register_out_fixed_point;
+logic[2*WIDTH-1:0] gain_register_out_fixed_point;
+
+//Data with gain applied to it
 logic[4*WIDTH-1:0] gained_signal;
 logic[WIDTH-1:0] gained_signal_registered;
-logic[WIDTH-1:0] clipped_signal;
+
+//Signals for the comparator
+logic[WIDTH-1:0] comparator_in;
+logic comparator_out;
+
 logic[WIDTH-1:0] rectifier_out;
+
 logic[WIDTH-1:0] gained_signal_delayed;
 
-//This is a register that stores the threshold value.
-register #(.WIDTH(WIDTH)) threshold_in (.in(threshold), .out(threshold_register_out), .#);
+logic[WIDTH-1:0] clipped_signal;
+
+
 //This is a signed 24bit integer. It has 24 full bits and 0 fractional bits.
 register #(.WIDTH(WIDTH)) data_in (.in(in), .out(data_register_out), .#);
 //This is a 24bit fixed point signed number. It will be representing values between 0 and 8.
 //The first 4 bits are for whole numbers and the remaining 20 are for fractional bits.
 register #(.WIDTH(WIDTH)) gain_knob_in (.in(gain), .out(gain_register_out), .#);
+
+//This is a register that stores the threshold value.
+register #(.WIDTH(WIDTH)) threshold_in (.in(threshold), .out(threshold_register_out), .#);
 
 //This converts the data from 24 bit signed to be 48 bits where the fixed-point decimal is in the middle.
 assign data_register_out_fixed_point = {data_register_out, '0};
@@ -44,8 +56,8 @@ assign gain_register_out_fixed_point = {20'b00000000000000000000, gain_register_
 //This multiplier multiplies the gain with the data.
 multiplier #(.WIDTH(WIDTH*2)) gain_multiplier (.a(data_register_out_fixed_point), .b(gain_register_out_fixed_point), .product(gained_signal));
 
-//Stores multiplier output in register. Cuts off the upper 48 bits of multiplication and the last 24 bits since they are fractional bits.
-register #(.WIDTH(WIDTH)) multiplier_register (.in.(gained_signal[2*WIDTH-1:WIDTH]), .out(gained_signal_registered), .#);
+//Stores multiplier output in register. Cuts off the upper 24 bits of multiplication and the last 48 bits since they are fractional bits.
+register #(.WIDTH(WIDTH)) multiplier_register (.in(gained_signal[3*WIDTH-1:2*WIDTH]), .out(gained_signal_registered), .#);
 
 //This rectifier gets the output of the multiplier and turns it positive if it is negative. 
 //This step is necessary since the comparison for the threshold is done against a positive number.
