@@ -12,7 +12,7 @@ module register
     output logic [WIDTH-1:0] out
 );
 
-always_ff @(posedge clk or posedge rst) begin
+always_ff @(posedge clk or posedge reset) begin
     //If reset is 1, set output to 0
     if(reset)
         out <= '0;
@@ -93,7 +93,7 @@ module adder
     input logic [WIDTH-1:0] in0, in1,
     input logic carry_in,
     output logic [WIDTH-1:0] sum,
-    output logic carry_out,
+    output logic carry_out
 );
 
 assign {carry_out, sum} = in0 + in1 + carry_in;
@@ -106,7 +106,7 @@ module comparator
 )
 (
     input logic [WIDTH-1:0] in0, in1,
-    output logic out,
+    output logic out
 );
 
     assign out = (in0 >= in1);
@@ -119,9 +119,9 @@ module rectifier
 )
 (
     input logic [WIDTH-1:0] in,
-    output logic [WIDTH-1:0] out,
+    output logic [WIDTH-1:0] out
 );
 // Checks if last bit is 1, flips input sign if true.
-    assign output = input[WIDTH-1] ? ~input + 1 : input;
+    assign out = in[WIDTH-1] ? ~in + 1 : in;
 
 endmodule
