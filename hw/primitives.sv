@@ -81,7 +81,7 @@ module multiplier
     output logic[2*WIDTH-1:0] product
 );
 
-assign product = a * b; 
+assign product = signed'(a) * signed'(b); 
 
 endmodule
 
@@ -118,8 +118,8 @@ module rectifier
     parameter int WIDTH = 24
 )
 (
-    input logic [WIDTH-1:0] input,
-    output logic [WIDTH-1:0] output,
+    input logic [WIDTH-1:0] in,
+    output logic [WIDTH-1:0] out,
 );
 // Checks if last bit is 1, flips input sign if true.
     assign output = input[WIDTH-1] ? ~input + 1 : input;
